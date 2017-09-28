@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Hardware Simulation</title>
+
+    <meta name="description" content="Project : Smart City GE Hackathon">
+    <meta name="author" content="Rahul Kumar(WebLayout)+Archisman Sarkar(Networking)">
+	<meta name="viewport" content="width=device-width" initial-scale=1 />
+
+    <link href="css/bootstrap.min.css" rel="stylesheet">
+    <link href="css/style.css" rel="stylesheet">
+    <script language="javascript">
+
+    	var socket = null;
+         var isopen = false;
+         var TL_State = "TL_OFF";
+         var FAN_State= "FAN_OFF";
+         var dataString = "";
+         var dataStringParsed = "";
+
+         window.onload = function() {
+
+            socket = new WebSocket("ws://52.14.147.118:9090");
+            socket.binaryType = "arraybuffer";
+
+            socket.onopen = function() {
+               console.log("Connected!");
+               isopen = true;
+               socket.send("Web-LOGIN");
+            }
+
+            socket.onmessage = function(e) {
+               if (typeof e.data == "string") {
+                  console.log("Text message received: " + e.data);
+                  dataString = e.data;
+                  dataStringParsed = dataString.split("-");
+                  if(dataStringParsed[0]=="CTRL"){
+                  	if(dataStringParsed[1]=="TL_ON"){
+                  		TL_State = "TL_ON";
+                  		autoToggleBulb("TL_ON");
+                  	}
+                  	else if(dataStringParsed[1]=="TL_OFF"){
+                  		TL_State = "TL_OFF";
+                  		autoToggleBulb("TL_OFF");
+                  	}
+                  	if(dataStringParsed[2]=="FAN_OFF")changeFan(0);
+                  	else if(dataStringParsed[2]=="FAN_ON_1")changeFan(1);
+                  	else if(dataStringParsed[2]=="FAN_ON_2")changeFan(2);
+                  	else if(dataStringParsed[2]=="FAN_ON_3")changeFan(3);
+                  	else if(dataStringParsed[2]=="FAN_ON_4")changeFan(4);
+                  	else if(dataStringParsed[2]=="FAN_ON_5")changeFan(5);
+                  }
+                  if(dataStringParsed[0]=="STATUS"){
+                  	socket.send("Android-CTRL-"+TL_State+"-"+FAN_State);
+                  }
+               } else {
+                  var arr = new Uint8Array(e.data);
+                  var hex = '';
+                  for (var i = 0; i < arr.length; i++) {
+                     hex += ('00' + arr[i].toString(16)).substr(-2);
+                  }
+                  console.log("Binary message received: " + hex);
+               }
+            }
+
+            socket.onclose = function(e) {
+               console.log("Connection closed.");
+               socket = null;
+               isopen = false;
+            }
+         };
+
+         function autoToggleBulb(state) {
+	        if (state=="TL_ON") {
+	            document.getElementById("toggle_bulb").src = "image/bulb_on.png";
+	            document.getElementById("toggle_bulb_switch").src = "image/on_switch.png";
+	        	document.getElementById("toggle_bulb").alt = "bulb_on";
+	        	
+	        }else if(state=="TL_OFF"){
+	            document.getElementById("toggle_bulb").src = "image/bulb_off.png";
+	            document.getElementById("toggle_bulb_switch").src = "image/off_switch.png";
+	        	document.getElementById("toggle_bulb").alt = "bulb_off";
+	        }
+	    }
+    	function toggleBulb() {
+	        if (document.getElementById("toggle_bulb").alt == "bulb_off") {
+	            document.getElementById("toggle_bulb").src = "image/bulb_on.png";
+	            document.getElementById("toggle_bulb_switch").src = "image/on_switch.png";
+	        	document.getElementById("toggle_bulb").alt = "bulb_on";
+	        	TL_State = "TL_ON";
+	        	socket.send("Android-CTRL-"+TL_State+"-"+FAN_State);
+	        	
+	        }else{
+	            document.getElementById("toggle_bulb").src = "image/bulb_off.png";
+	            document.getElementById("toggle_bulb_switch").src = "image/off_switch.png";
+	        	document.getElementById("toggle_bulb").alt = "bulb_off";
+	        	TL_State = "TL_OFF";
+	        	socket.send("Android-CTRL-"+TL_State+"-"+FAN_State);
+	        }
+	    }
+
+	    function changeFan(speed){
+	    	if(speed==0){
+	    		document.getElementById("change_fan_0").src = "image/fan_off.png";
+
+	    		document.getElementById("change_fan_1").src = "image/fan_switch_0.png";
+	    		document.getElementById("change_fan_2").src = "image/fan_switch_0.png";
+	    		document.getElementById("change_fan_3").src = "image/fan_switch_0.png";
+	    		document.getElementById("change_fan_4").src = "image/fan_switch_0.png";
+	    		document.getElementById("change_fan_5").src = "image/fan_switch_0.png";
+	    		FAN_State = "FAN_OFF"
+	    		socket.send("Android-CTRL-"+TL_State+"-"+FAN_State);
+	    	}else if(speed==1){
+	    		document.getElementById("change_fan_0").src = "image/fan_on_1.png";
+
+	    		document.getElementById("change_fan_1").src = "image/fan_switch_0.png";
+	    		document.getElementById("change_fan_2").src = "image/fan_switch_0.png";
+	    		document.getElementById("change_fan_3").src = "image/fan_switch_0.png";
+	    		document.getElementById("change_fan_4").src = "image/fan_switch_0.png";
+	    		document.getElementById("change_fan_5").src = "image/fan_switch_1.png";
+	    		FAN_State = "FAN_ON_1"
+	    		socket.send("Android-CTRL-"+TL_State+"-"+FAN_State);
+	    	}else if(speed==2){
+	    		document.getElementById("change_fan_0").src = "image/fan_on_2.png";
+
+	    		document.getElementById("change_fan_1").src = "image/fan_switch_0.png";
+	    		document.getElementById("change_fan_2").src = "image/fan_switch_0.png";
+	    		document.getElementById("change_fan_3").src = "image/fan_switch_0.png";
+	    		document.getElementById("change_fan_4").src = "image/fan_switch_2.png";
+	    		document.getElementById("change_fan_5").src = "image/fan_switch_1.png";
+	    		FAN_State = "FAN_ON_2"
+	    		socket.send("Android-CTRL-"+TL_State+"-"+FAN_State);
+	    	}else if(speed==3){
+	    		document.getElementById("change_fan_0").src = "image/fan_on_3.png";
+
+	    		document.getElementById("change_fan_1").src = "image/fan_switch_0.png";
+	    		document.getElementById("change_fan_2").src = "image/fan_switch_0.png";
+	    		document.getElementById("change_fan_3").src = "image/fan_switch_3.png";
+	    		document.getElementById("change_fan_4").src = "image/fan_switch_2.png";
+	    		document.getElementById("change_fan_5").src = "image/fan_switch_1.png";
+	    		FAN_State = "FAN_ON_3"
+	    		socket.send("Android-CTRL-"+TL_State+"-"+FAN_State);
+	    	}else if(speed==4){
+	    		document.getElementById("change_fan_0").src = "image/fan_on_4.png";
+
+	    		document.getElementById("change_fan_1").src = "image/fan_switch_0.png";
+	    		document.getElementById("change_fan_2").src = "image/fan_switch_4.png";
+	    		document.getElementById("change_fan_3").src = "image/fan_switch_3.png";
+	    		document.getElementById("change_fan_4").src = "image/fan_switch_2.png";
+	    		document.getElementById("change_fan_5").src = "image/fan_switch_1.png";
+	    		FAN_State = "FAN_ON_4"
+	    		socket.send("Android-CTRL-"+TL_State+"-"+FAN_State);
+	    	}else{
+	    		document.getElementById("change_fan_0").src = "image/fan_on_5.png";
+
+	    		document.getElementById("change_fan_1").src = "image/fan_switch_5.png";
+	    		document.getElementById("change_fan_2").src = "image/fan_switch_4.png";
+	    		document.getElementById("change_fan_3").src = "image/fan_switch_3.png";
+	    		document.getElementById("change_fan_4").src = "image/fan_switch_2.png";
+	    		document.getElementById("change_fan_5").src = "image/fan_switch_1.png";
+	    		FAN_State = "FAN_ON_5"
+	    		socket.send("Android-CTRL-"+TL_State+"-"+FAN_State);
+	    	}
+	    }
+    </script>
+	<script src="js/angular.min.js"></script>
+	<script src="js/scripts.js"></script>
+  </head>
+
+  <body ng-app="myModule">
+	<div class="row">
+		<div class="col-md-12">
+			<div class="page-header header">
+				<h1>
+					<img src="image/header_text.png" />  <small>SmartBots123</small> 
+				</h1>
+			</div>
+		</div>
+	</div>
+	<div class="row">
+		<div class="col-md-3">
+		</div>
+		<div class="col-md-6 text-center">
+			<div class="row">
+				<div class="col-md-6 light_card">
+					<br>
+					<img width="200px" alt="bulb_off" src="image/bulb_off.png" onclick="toggleBulb()" id="toggle_bulb">
+					<br><br><br>
+					<img width="150px" alt="switch_off" src="image/off_switch.png" onclick="toggleBulb()" id="toggle_bulb_switch">
+				</div>
+				<div class="col-md-6 fan_card">
+					<br><br><br>
+					<img width="100px" src="image/fan_off.png" onclick="changeFan(0)"  id="change_fan_0">
+					<br><br><br>
+					<img width="170px" src="image/fan_switch_0.png" onclick="changeFan(5)" id="change_fan_1">
+					<img width="170px" src="image/fan_switch_0.png" onclick="changeFan(4)" id="change_fan_2">
+					<img width="170px" src="image/fan_switch_0.png" onclick="changeFan(3)" id="change_fan_3">
+					<img width="170px" src="image/fan_switch_0.png" onclick="changeFan(2)" id="change_fan_4">
+					<img width="170px" src="image/fan_switch_0.png" onclick="changeFan(1)" id="change_fan_5">
+				</div>
+			</div>
+		</div>
+		<div class="col-md-3">
+		</div>
+	</div>
+    
+	<!-- Modules -->
+    <script src="js/app.js"></script>
+	<!-- Controllers -->
+    <script src="js/controllers/MainController.js"></script>
+    
+
+    <script src="js/jquery.min.js"></script>
+    <script src="js/bootstrap.min.js"></script>
+    <script src="js/scripts.js"></script>
+  </body>
+</html>

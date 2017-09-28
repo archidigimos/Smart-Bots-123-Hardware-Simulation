@@ -1,0 +1,33 @@
+html, body {
+    max-width: 100%;
+    overflow-x: hidden;
+}
+body{
+  max-width: 100%;
+  font-family: 'Trebuchet MS';
+  background-repeat:no-repeat;
+  background-size:cover;
+  background-image: url('../image/background.jpg');
+}
+
+.header{
+  color: #F8BBD0;
+}
+.header small{
+  color:#FFFFFF;
+}
+
+.light_card{
+  height: 400px;
+  background: url('../image/round_white_rect.png') no-repeat center;
+}
+
+.light_card img{
+  padding: 10px; 
+}
+
+.fan_card{
+  height: 400px;
+  background: url('../image/round_white_rect.png') no-repeat center;
+}
+
